@@ -32,6 +32,7 @@ def explain_rules(message):
     bot.send_message(chat_id, "Игра в города - словесная игра, где участники поочередно называют... города. Смысл в том, чтобы каждое следующее название начиналось с той буквы, на которую заканчивалось предыдущее название. Например, если первым назван город Санкт-Петербург, то смотрим: он заканчивается на букву Г. Соответственно, название следующего города должно начинаться на Г.")
 
 
+
 @bot.message_handler(func=lambda message: message.text == 'Начать игру▶️')
 def start_game(message):
     keyboard = InlineKeyboardMarkup()
@@ -58,12 +59,20 @@ def game_keyboard():
     keyboard.add(stop)
     keyboard.add(giveup)
 
+
     return keyboard
 
 @bot.message_handler(func=lambda message: message.text == "Стоп🛑")
 def stop_game(message):
     chat_id = message.chat.id
-    bot.send_message(chat_id,)
+    bot.send_message(chat_id,"Игра окончена")
+
+@bot.message_handler(func=lambda message: message.text == "Сдаться🏳️")
+def stop_game(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id,"Очень жаль😢,повезет в следующий раз")
+
+
 
 
 
