@@ -4,7 +4,7 @@ from random import choice
 from telebot import TeleBot
 from telebot.types import KeyboardButton,ReplyKeyboardMarkup, InlineKeyboardButton,InlineKeyboardMarkup
 
-from utils import get_name_of_cities
+from utils import get_name_of_cities, MenuStack
 
 TOKEN="5573199594:AAE3eUQBWc6SGJOT-I-t-JnvyxhprIN0teU"
 
@@ -14,16 +14,21 @@ def main_menu_keyboard():
     start=KeyboardButton("Начать игру▶️")
     rules=KeyboardButton("Правила🗒")
 
+
+
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(start)
     keyboard.add(rules)
 
+
     return keyboard
 
+stack = MenuStack(main_menu_keyboard())
 
 @bot.message_handler(commands=['start'])
 def message_handler(message):
     bot.send_message(message.chat.id, "Здравствуйте!Вас приветствует бот,в котором вы можете поиграть в игру города", reply_markup=main_menu_keyboard())
+
 
 
 @bot.message_handler(func=lambda message: message.text == "Правила🗒")
@@ -39,6 +44,7 @@ def start_game(message):
     keyboard_cities = InlineKeyboardButton(text='"Игра в города"', callback_data='cities')
     keyboard.add(keyboard_cities)
     bot.send_message(message.chat.id, 'Привет', reply_markup=keyboard)
+    stack.push(keyboard)
 
 
 game_stared = False
@@ -55,9 +61,14 @@ def callback_worker(call):
 def game_keyboard():
     stop = KeyboardButton('Стоп🛑')
     giveup = KeyboardButton('Сдаться🏳️')
+    back = KeyboardButton('<< Назад')
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(stop)
     keyboard.add(giveup)
+    keyboard.add(back)
+    stack.push(keyboard)
+
+
 
 
     return keyboard
@@ -72,9 +83,11 @@ def stop_game(message):
     chat_id = message.chat.id
     bot.send_message(chat_id,"Очень жаль😢,повезет в следующий раз")
 
-
-
-
+@bot.message_handler(func=lambda message: message.text == '<< Назад')
+def back_handler(message):
+    stack.pop()
+    menu_to_go_back = stack.pop()
+    bot.send_message(message.chat.id, "Предыдущее меню:", reply_markup=main_menu_keyboard())
 
 
 @bot.message_handler(content_types=['text'])
@@ -94,6 +107,9 @@ def game_handler(message):
         gorod = choice(goroda_kotoriye_mojno_otvetit)
         bot.send_message(message.chat.id, gorod, reply_markup=game_keyboard())
         goroda_kotoriye_mojno_otvetit.clear()
+
+
+
 bot.infinity_polling()
 
 
